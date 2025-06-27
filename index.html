@@ -1,745 +1,220 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="scroll-smooth">
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>游戏交易平台</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#165DFF',
-                        secondary: '#FF7D00',
-                        success: '#00B42A',
-                        danger: '#F53F3F',
-                        warning: '#FF7D00',
-                        info: '#86909C',
-                        light: '#F2F3F5',
-                        dark: '#1D2129',
-                    },
-                    fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .scrollbar-hide {
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-            }
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
-            }
-            .card-hover {
-                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
-            }
-            .sort-asc::after {
-                content: '↑';
-                margin-left: 4px;
-            }
-            .sort-desc::after {
-                content: '↓';
-                margin-left: 4px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>游戏账号管理</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <style>
+    .modal-bg { background:rgba(0,0,0,0.4); }
+    .ellipsis { 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap; 
+      max-width: 180px; 
+      display: inline-block; 
+      vertical-align: bottom;
+    }
+  </style>
 </head>
-document.addEventListener('DOMContentLoaded', function() {
-    // 主题切换功能
-    const themeToggle = document.getElementById('theme-toggle');
-    const htmlElement = document.documentElement;
-    
-    // 检查用户偏好的主题
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const savedTheme = localStorage.getItem('theme');
-    
-    // 应用保存的主题或系统偏好
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-        htmlElement.classList.add('dark');
-        themeToggle.innerHTML = '<i class="fa fa-sun-o"></i>';
-    }
-    
-    themeToggle.addEventListener('click', function() {
-        htmlElement.classList.toggle('dark');
-        const isDark = htmlElement.classList.contains('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        themeToggle.innerHTML = isDark ? '<i class="fa fa-sun-o"></i>' : '<i class="fa fa-moon-o"></i>';
-    });
-    
-    // 模拟账号数据
-    const accounts = [
-        {
-            id: 'GA-1001',
-            game: '明日方舟',
-            title: '全六星高练度账号',
-            description: '包含所有限定干员，练度充足',
-            server: '安卓服',
-            level: 90,
-            sellPrice: 399.00,
-            buybackPrice: 259.00,
-            status: '出售中',
-            createdAt: '2025-06-15',
-            soldAt: '-'
-        },
-        {
-            id: 'GA-1002',
-            game: '原神',
-            title: '满命胡桃钟离账号',
-            description: '双黄限定角色，武器齐全',
-            server: '官服',
-            level: 55,
-            sellPrice: 599.00,
-            buybackPrice: 389.00,
-            status: '已售出',
-            createdAt: '2025-06-10',
-            soldAt: '2025-06-20'
-        },
-        {
-            id: 'GA-1003',
-            game: '艾尔登法环',
-            title: '全收集高周目账号',
-            description: '全Boss击杀，装备齐全',
-            server: 'PC',
-            level: 150,
-            sellPrice: 459.00,
-            buybackPrice: 299.00,
-            status: '审核中',
-            createdAt: '2025-06-05',
-            soldAt: '-'
-        },
-        {
-            id: 'GA-1004',
-            game: '塞尔达传说',
-            title: '全神庙收集账号',
-            description: '大师模式通关，DLC全解锁',
-            server: 'Switch',
-            level: '完成度100%',
-            sellPrice: 329.00,
-            buybackPrice: 219.00,
-            status: '已下架',
-            createdAt: '2025-05-28',
-            soldAt: '-'
-        }
-    ];
-    
-    // 渲染账号表格
-    function renderAccounts(accountList) {
-        const tableBody = document.getElementById('accounts-table-body');
-        tableBody.innerHTML = '';
-        
-        if (accountList.length === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="11" class="px-6 py-12 text-center text-neutral-500 dark:text-neutral-400">
-                        <div class="flex flex-col items-center">
-                            <i class="fa fa-search text-4xl mb-4 text-neutral-300 dark:text-neutral-600"></i>
-                            <p>未找到匹配的账号</p>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-        
-        accountList.forEach(account => {
-            const statusClass = {
-                '出售中': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                '已售出': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-                '审核中': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                '已下架': 'bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-300',
-                '已拒绝': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-            }[account.status] || 'bg-neutral-100 text-neutral-800';
-            
-            const row = document.createElement('tr');
-            row.className = 'hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors';
-            row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                    #${account.id}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="h-8 w-8 rounded-md bg-blue-100 flex items-center justify-center mr-3">
-                            <i class="fa fa-gamepad text-blue-600"></i>
-                        </div>
-                        <div>
-                            <div class="text-sm font-medium text-neutral-900 dark:text-white">${account.game}</div>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4 max-w-xs">
-                    <div class="text-sm font-medium text-neutral-900 dark:text-white truncate">${account.title}</div>
-                    <div class="text-xs text-neutral-500 dark:text-neutral-400">${account.description}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                    ${account.server}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                    ${account.level}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
-                    ¥${account.sellPrice.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary">
-                    ¥${account.buybackPrice.toFixed(2)}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                        ${account.status}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                    ${account.createdAt}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                    ${account.soldAt}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
-                        <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-primary transition-colors" title="查看详情" data-id="${account.id}">
-                            <i class="fa fa-eye"></i>
-                        </button>
-                        <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-primary transition-colors" title="编辑账号" data-id="${account.id}">
-                            <i class="fa fa-pencil"></i>
-                        </button>
-                        <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-danger transition-colors" title="下架账号" data-id="${account.id}">
-                            <i class="fa fa-ban"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
-    
-    // 初始化渲染
-    renderAccounts(accounts);
-    
-    // 表格排序功能
-    const sortableHeaders = document.querySelectorAll('.sortable');
-    let currentSort = { field: 'sellPrice', direction: 'desc' };
-    
-    sortableHeaders.forEach(header => {
-        header.addEventListener('click', function() {
-            const field = this.getAttribute('data-sort');
-            const direction = currentSort.field === field 
-                ? (currentSort.direction === 'asc' ? 'desc' : 'asc') 
-                : 'asc';
-            
-            // 更新排序状态
-            currentSort = { field, direction };
-            
-            // 重置所有表头的图标
-            sortableHeaders.forEach(h => {
-                h.querySelector('i').className = 'fa fa-sort text-neutral-400';
-                h.classList.remove('sort-asc', 'sort-desc');
-            });
-            
-            // 更新当前表头的图标
-            const icon = this.querySelector('i');
-            icon.className = direction === 'asc' 
-                ? 'fa fa-sort-asc text-primary' 
-                : 'fa fa-sort-desc text-primary';
-            this.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
-            
-            // 排序数据
-            const sortedAccounts = [...accounts].sort((a, b) => {
-                let valueA, valueB;
-                
-                // 根据不同字段类型进行排序
-                switch(field) {
-                    case 'id':
-                        valueA = parseInt(a.id.replace('GA-', ''));
-                        valueB = parseInt(b.id.replace('GA-', ''));
-                        break;
-                    case 'sellPrice':
-                    case 'buybackPrice':
-                        valueA = a[field];
-                        valueB = b[field];
-                        break;
-                    case 'level':
-                        // 特殊处理"完成度100%"这种情况
-                        valueA = typeof a.level === 'string' ? parseInt(a.level) : a.level;
-                        valueB = typeof b.level === 'string' ? parseInt(b.level) : b.level;
-                        break;
-                    default:
-                        valueA = a[field].toLowerCase();
-                        valueB = b[field].toLowerCase();
-                }
-                
-                if (valueA < valueB) return direction === 'asc' ? -1 : 1;
-                if (valueA > valueB) return direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-            
-            // 重新渲染表格
-            renderAccounts(sortedAccounts);
-        });
-    });
-    
-    // 游戏类目选择
-    const gameCategories = document.getElementById('game-categories');
-    const gameButtons = gameCategories.querySelectorAll('button[data-game]');
-    const gameFilter = document.getElementById('game-filter');
-    
-    gameButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const game = this.getAttribute('data-game');
-            
-            // 更新按钮样式
-            gameButtons.forEach(btn => {
-                btn.classList.remove('bg-primary', 'text-white');
-                btn.classList.add('bg-neutral-100', 'dark:bg-neutral-700', 'hover:bg-neutral-200', 'dark:hover:bg-neutral-600');
-            });
-            this.classList.remove('bg-neutral-100', 'dark:bg-neutral-700', 'hover:bg-neutral-200', 'dark:hover:bg-neutral-600');
-            this.classList.add('bg-primary', 'text-white');
-            
-            // 更新下拉菜单
-            gameFilter.value = game;
-            
-            // 筛选账号
-            filterAccounts();
-        });
-    });
-    
-    // 下拉菜单筛选
-    gameFilter.addEventListener('change', function() {
-        const game = this.value;
-        
-        // 更新按钮样式
-        gameButtons.forEach(button => {
-            button.classList.remove('bg-primary', 'text-white');
-            button.classList.add('bg-neutral-100', 'dark:bg-neutral-700', 'hover:bg-neutral-200', 'dark:hover:bg-neutral-600');
-            
-            if (button.getAttribute('data-game') === game) {
-                button.classList.remove('bg-neutral-100', 'dark:bg-neutral-700', 'hover:bg-neutral-200', 'dark:hover:bg-neutral-600');
-                button.classList.add('bg-primary', 'text-white');
-            }
-        });
-        
-        // 筛选账号
-        filterAccounts();
-    });
-    
-    // 搜索功能
-    const searchBtn = document.getElementById('search-btn');
-    const titleSearch = document.getElementById('title-search');
-    
-    searchBtn.addEventListener('click', filterAccounts);
-    titleSearch.addEventListener('keyup', function(e) {
-        if (e.key === 'Enter') {
-            filterAccounts();
-        }
-    });
-    
-    function filterAccounts() {
-        const game = gameFilter.value;
-        const title = titleSearch.value.toLowerCase();
-        
-        let filtered = [...accounts];
-        
-        // 按游戏筛选
-        if (game) {
-            filtered = filtered.filter(account => account.game === game);
-        }
-        
-        // 按标题筛选
-        if (title) {
-            filtered = filtered.filter(account => 
-                account.title.toLowerCase().includes(title) || 
-                account.description.toLowerCase().includes(title)
-            );
-        }
-        
-        // 重新渲染表格
-        renderAccounts(filtered);
-    }
-    
-    // 添加账号/游戏按钮逻辑
-    const addAccountBtn = document.getElementById('add-account-btn');
-    const addAccountBtnTable = document.getElementById('add-account-btn-table');
-    const addGameBtn = document.getElementById('add-game-btn');
-    const addGameMobile = document.getElementById('add-game-mobile');
-    
-    function showAddModal(type) {
-        alert(`"添加${type}"功能将在未来版本中实现`);
-        // 实际项目中这里应该显示一个模态框
-    }
-    
-    addAccountBtn.addEventListener('click', () => showAddModal('账号'));
-    addAccountBtnTable.addEventListener('click', () => showAddModal('账号'));
-    addGameBtn.addEventListener('click', () => showAddModal('游戏'));
-    addGameMobile.addEventListener('click', () => showAddModal('游戏'));
-    
-    // 模拟编辑/查看/下架按钮
-    document.addEventListener('click', function(e) {
-        const target = e.target.closest('button[data-id]');
-        if (!target) return;
-        
-        const action = target.title;
-        const id = target.getAttribute('data-id');
-        
-        alert(`${action}账号 ${id} 的功能将在未来版本中实现`);
-    });
-});<!-- 添加账号弹窗 -->
-<div id="account-modal" style="display:none; position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:1000;">
-  <form id="account-form" style="background:#fff;padding:24px;border-radius:10px;min-width:260px;max-width:90vw;">
-    <h2 style="margin-bottom:16px;">添加账号</h2>
-    <div style="margin-bottom:8px;">
-      <label>游戏：</label><input id="form-game" required>
-    </div>
-    <div style="margin-bottom:8px;">
-      <label>标题：</label><input id="form-title" required>
-    </div>
-    <div style="margin-bottom:8px;">
-      <label>销售价格：</label><input id="form-sellPrice" type="number" required>
-    </div>
-    <div style="margin-bottom:8px;">
-      <label>收购价格：</label><input id="form-buybackPrice" type="number" required>
-    </div>
-    <div style="margin-bottom:8px;">
-      <label>状态：</label>
-      <select id="form-status" required>
-        <option value="">请选择</option>
-        <option value="出售中">出售中</option>
-        <option value="审核中">审核中</option>
-        <option value="已售出">已售出</option>
-        <option value="已下架">已下架</option>
-      </select>
-    </div>
-    <div style="margin-bottom:12px;">
-      <label>描述：</label><textarea id="form-description"></textarea>
-    </div>
-    <button type="submit">提交</button>
-    <button type="button" id="account-cancel-btn">取消</button>
-  </form>
-</div>
-<!-- 添加账号按钮 -->
-<button id="show-add-account-btn" style="margin:16px 0;padding:8px 16px;background:#165DFF;color:#fff;border:none;border-radius:4px;cursor:pointer;">添加账号</button><body class="font-inter bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 min-h-screen flex flex-col">
-    <!-- 导航栏 -->
-    <header class="sticky top-0 z-40 bg-white dark:bg-neutral-800 transition-all duration-300">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <div class="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                    <i class="fa fa-gamepad text-white text-xl"></i>
-                </div>
-                <h1 class="text-xl font-bold text-neutral-800 dark:text-white">游戏宝库</h1>
-            </div>
-            
-            <nav class="hidden md:flex items-center space-x-6">
-                <a href="#" class="text-primary font-medium">账号管理</a>
-                <a href="#" class="text-neutral-600 dark:text-neutral-300 hover:text-primary transition-colors">订单管理</a>
-                <a href="#" class="text-neutral-600 dark:text-neutral-300 hover:text-primary transition-colors">数据分析</a>
-            </nav>
-            
-            <div class="flex items-center space-x-4">
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
-                    <i class="fa fa-moon-o"></i>
-                </button>
-                <button id="add-game-btn" class="hidden md:flex items-center px-4 py-2 bg-secondary hover:bg-secondary/90 text-white rounded-lg shadow transition-all duration-200">
-                    <i class="fa fa-plus mr-2"></i>
-                    <span>添加游戏</span>
-                </button>
-                <button id="add-account-btn" class="hidden md:flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg shadow transition-all duration-200">
-                    <i class="fa fa-plus mr-2"></i>
-                    <span>添加账号</span>
-                </button>
-                <button class="md:hidden p-2 rounded-full bg-primary text-white">
-                    <i class="fa fa-plus"></i>
-                </button>
-            </div>
-        </div>
-    </header>
+<body class="bg-gray-50 min-h-screen">
 
-    <!-- 主内容区 -->
-    <main class="flex-grow container mx-auto px-4 py-6">
-        <!-- 页面标题 -->
-        <div class="mb-6">
-            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-neutral-800 dark:text-white">账号管理</h2>
-            <p class="text-neutral-500 dark:text-neutral-400">管理您的游戏账号，查看详细信息和交易状态</p>
-        </div>
-        
-        <!-- 游戏类目选择 -->
-        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 mb-6">
-            <div class="flex items-center justify-between">
-                <h3 class="font-semibold text-neutral-800 dark:text-white">游戏类目</h3>
-                <button id="add-game-mobile" class="md:hidden p-2 rounded-full bg-secondary text-white">
-                    <i class="fa fa-plus"></i>
-                </button>
-            </div>
-            <div class="flex flex-wrap gap-2 mt-3" id="game-categories">
-                <button class="px-3 py-1.5 bg-primary text-white rounded-full text-sm flex items-center">
-                    全部
-                    <span class="ml-1.5 bg-white text-primary text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">4</span>
-                </button>
-                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="明日方舟">
-                    明日方舟
-                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
-                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
-                        <i class="fa fa-pencil"></i>
-                    </button>
-                </button>
-                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="原神">
-                    原神
-                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
-                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
-                        <i class="fa fa-pencil"></i>
-                    </button>
-                </button>
-                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="艾尔登法环">
-                    艾尔登法环
-                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
-                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
-                        <i class="fa fa-pencil"></i>
-                    </button>
-                </button>
-                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="塞尔达传说">
-                    塞尔达传说
-                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
-                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
-                        <i class="fa fa-pencil"></i>
-                    </button>
-                </button>
-            </div>
-        </div>
-        
-        <!-- 筛选栏 -->
-        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">游戏名称</label>
-                    <div class="relative">
-                        <select id="game-filter" class="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
-                            <option value="">全部游戏</option>
-                            <option value="明日方舟">明日方舟</option>
-                            <option value="原神">原神</option>
-                            <option value="艾尔登法环">艾尔登法环</option>
-                            <option value="塞尔达传说">塞尔达传说</option>
-                        </select>
-                        <i class="fa fa-gamepad absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">账号状态</label>
-                    <select class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
-                        <option value="">全部状态</option>
-                        <option value="审核中">审核中</option>
-                        <option value="出售中">出售中</option>
-                        <option value="已下架">已下架</option>
-                        <option value="已售出">已售出</option>
-                        <option value="已拒绝">已拒绝</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">价格范围</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400">¥</span>
-                            <input type="number" class="w-full pl-8 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" placeholder="最低">
-                        </div>
-                        <div class="relative">
-                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400">¥</span>
-                            <input type="number" class="w-full pl-8 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" placeholder="最高">
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">创建时间</label>
-                    <input type="date" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
-                </div>
-            </div>
-            <div class="mt-4">
-                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">标题搜索</label>
-                <div class="relative">
-                    <input type="text" id="title-search" class="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" placeholder="搜索标题内容...">
-                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
-                </div>
-            </div>
-            <div class="flex justify-end mt-4 space-x-3">
-                <button class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-                    重置
-                </button>
-                <button id="search-btn" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg shadow transition-all duration-200">
-                    搜索
-                </button>
-            </div>
-        </div>
-        
-        <!-- 账号列表 -->
-        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-700">
-                <h3 class="font-semibold text-neutral-800 dark:text-white">账号列表</h3>
-                <button id="add-account-btn-table" class="flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg shadow transition-all duration-200">
-                    <i class="fa fa-plus mr-2"></i>
-                    <span>添加账号</span>
-                </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
-                    <thead class="bg-neutral-50 dark:bg-neutral-700">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="id">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>ID</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="game">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>游戏</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="title">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>标题</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="server">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>服务器</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="level">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>等级</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="sellPrice">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>销售价格</span>
-                                    <i class="fa fa-sort-desc text-primary"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="buybackPrice">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>回收价格</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="status">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>状态</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="createdAt">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>创建时间</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="soldAt">
-                                <div class="flex items-center space-x-1 cursor-pointer">
-                                    <span>出售时间</span>
-                                    <i class="fa fa-sort text-neutral-400"></i>
-                                </div>
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                                操作
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-700" id="accounts-table-body">
-                        <!-- 账号 1 -->
-                        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
-                                #GA-1001
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="h-8 w-8 rounded-md bg-blue-100 flex items-center justify-center mr-3">
-                                        <i class="fa fa-gamepad text-blue-600"></i>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-neutral-900 dark:text-white">明日方舟</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 max-w-xs">
-                                <div class="text-sm font-medium text-neutral-900 dark:text-white truncate">全六星高练度账号</div>
-                                <div class="text-xs text-neutral-500 dark:text-neutral-400">包含所有限定干员，练度充足</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                安卓服
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                90
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
-                                ¥399.00
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary">
-                                ¥259.00
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                    出售中
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                2025-06-15
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
-                                -
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex justify-end space-x-2">
-                                    <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-primary transition-colors" title="查看详情" data-id="GA-1001">
-                                        <i class="fa fa-eye"></i>
-                                    </button>
-                                    <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-primary transition-colors" title="编辑账号" data-id="GA-1001">
-                                        <i class="fa fa-pencil"></i>
-                                    </button>
-                                    <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-danger transition-colors" title="下架账号" data-id="GA-1001">
-                                        <i class="fa fa-ban"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- 分页 -->
-            <div class="px-4 py-3 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-700">
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-neutral-700 dark:text-neutral-300">
-                            显示第 <span class="font-medium">1</span> 到 <span class="font-medium">4</span> 条，共 <span class="font-medium">24</span> 条结果
-                        </p>
-                    </div>
-                    <div>
-                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm font-medium text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600">
-                                <span class="sr-only">上一页</span>
-                                <i class="fa fa-chevron-left"></i>
-                            </a>
-                            <a href="#" aria-current="page" class="z-10 bg-primary text-white relative inline-flex items-center px-4 py-2 border border-primary text-sm font-medium">
-                                1
-                            </a>
-                            <a href="#" class="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                                2
-                            </a>
-                            <a href="#" class="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                                3
-                            </a>
-                            <span class="relative inline-flex items-center px-4 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                                ...
-                            </span>
-                            <a href="#" class="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                                6
-                            </a>
-                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border
+  <!-- 页面头部 -->
+  <header class="bg-blue-600 text-white p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">游戏账号管理</h1>
+    <button id="show-add-account-btn" class="bg-white text-blue-600 px-4 py-2 rounded shadow">
+      <i class="fa fa-plus"></i> 添加账号
+    </button>
+  </header>
+
+  <main class="max-w-4xl mx-auto p-4">
+
+    <!-- 筛选区 -->
+    <div class="flex flex-wrap gap-4 items-end mb-4">
+      <div>
+        <label class="block text-sm mb-1">游戏</label>
+        <input id="filter-game" type="text" class="border rounded px-2 py-1 w-32" placeholder="如 明日方舟">
+      </div>
+      <div>
+        <label class="block text-sm mb-1">状态</label>
+        <select id="filter-status" class="border rounded px-2 py-1 w-24">
+          <option value="">全部</option>
+          <option value="出售中">出售中</option>
+          <option value="审核中">审核中</option>
+          <option value="已售出">已售出</option>
+          <option value="已下架">已下架</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-1">标题</label>
+        <input id="filter-title" type="text" class="border rounded px-2 py-1 w-32" placeholder="标题关键字">
+      </div>
+      <button id="filter-btn" class="px-3 py-2 bg-blue-600 text-white rounded">搜索</button>
+      <button id="reset-btn" class="px-3 py-2 border border-blue-600 text-blue-600 rounded">重置</button>
+    </div>
+
+    <!-- 账号列表表格 -->
+    <div class="bg-white rounded shadow overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="px-4 py-2 text-left cursor-pointer sortable" data-field="id">ID <i class="fa fa-sort"></i></th>
+            <th class="px-4 py-2 text-left cursor-pointer sortable" data-field="game">游戏 <i class="fa fa-sort"></i></th>
+            <th class="px-4 py-2 text-left">标题</th>
+            <th class="px-4 py-2 text-left cursor-pointer sortable" data-field="sellPrice">销售价格 <i class="fa fa-sort"></i></th>
+            <th class="px-4 py-2 text-left cursor-pointer sortable" data-field="buybackPrice">收购价格 <i class="fa fa-sort"></i></th>
+            <th class="px-4 py-2 text-left">状态</th>
+            <th class="px-4 py-2 text-left">创建时间</th>
+          </tr>
+        </thead>
+        <tbody id="accounts-table-body"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- 添加账号弹窗 -->
+  <div id="account-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-bg">
+    <form id="account-form" class="bg-white rounded shadow-lg w-[330px] p-6">
+      <h2 class="font-bold text-lg mb-4">添加账号</h2>
+      <div class="mb-2">
+        <label>游戏：</label>
+        <input id="form-game" class="border rounded px-2 py-1 w-full" required>
+      </div>
+      <div class="mb-2">
+        <label>标题：</label>
+        <input id="form-title" class="border rounded px-2 py-1 w-full" required>
+      </div>
+      <div class="mb-2">
+        <label>销售价格：</label>
+        <input id="form-sellPrice" type="number" class="border rounded px-2 py-1 w-full" required>
+      </div>
+      <div class="mb-2">
+        <label>收购价格：</label>
+        <input id="form-buybackPrice" type="number" class="border rounded px-2 py-1 w-full" required>
+      </div>
+      <div class="mb-2">
+        <label>状态：</label>
+        <select id="form-status" class="border rounded px-2 py-1 w-full" required>
+          <option value="">请选择</option>
+          <option value="出售中">出售中</option>
+          <option value="审核中">审核中</option>
+          <option value="已售出">已售出</option>
+          <option value="已下架">已下架</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label>描述：</label>
+        <textarea id="form-description" class="border rounded px-2 py-1 w-full"></textarea>
+      </div>
+      <div class="mt-4 flex justify-end gap-2">
+        <button type="button" id="account-cancel-btn" class="px-4 py-2 rounded bg-gray-200">取消</button>
+        <button type="submit" class="px-4 py-2 rounded bg-blue-600 text-white">提交</button>
+      </div>
+    </form>
+  </div>
+
+<script>
+// 排序状态
+let sortField = 'id', sortOrder = 'desc';
+
+// 显示添加账号弹窗
+document.getElementById('show-add-account-btn').onclick = function(){
+  document.getElementById('account-modal').style.display = 'flex';
+};
+// 隐藏弹窗
+document.getElementById('account-cancel-btn').onclick = function(){
+  document.getElementById('account-modal').style.display = 'none';
+};
+
+// 提交账号表单
+document.getElementById('account-form').onsubmit = async function(e){
+  e.preventDefault();
+  const data = {
+    game: document.getElementById('form-game').value,
+    title: document.getElementById('form-title').value,
+    sellPrice: document.getElementById('form-sellPrice').value,
+    buybackPrice: document.getElementById('form-buybackPrice').value,
+    status: document.getElementById('form-status').value,
+    description: document.getElementById('form-description').value
+  };
+  // 向后端发送添加请求
+  const res = await fetch('/api/account', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  const result = await res.json();
+  if(result.success){
+    alert('添加成功！');
+    document.getElementById('account-modal').style.display = 'none';
+    loadAccounts(); // 重新加载账号列表
+  }else{
+    alert('添加失败！');
+  }
+};
+
+// 加载账号列表
+async function loadAccounts() {
+  // 获取筛选条件
+  const game = document.getElementById('filter-game').value.trim();
+  const status = document.getElementById('filter-status').value;
+  const title = document.getElementById('filter-title').value.trim();
+  let params = [];
+  if(game) params.push('game='+encodeURIComponent(game));
+  if(status) params.push('status='+encodeURIComponent(status));
+  if(title) params.push('title='+encodeURIComponent(title));
+  if(sortField) params.push('sortField='+sortField);
+  if(sortOrder) params.push('sortOrder='+sortOrder);
+  const query = params.length ? '?' + params.join('&') : '';
+  const res = await fetch('/api/accounts' + query);
+  const data = await res.json();
+  const tbody = document.getElementById('accounts-table-body');
+  tbody.innerHTML = '';
+  (data.rows || []).forEach(acc=>{
+    tbody.innerHTML += `
+    <tr>
+      <td class="px-4 py-2">#${acc.id}</td>
+      <td class="px-4 py-2">${acc.game}</td>
+      <td class="px-4 py-2"><span class="ellipsis" title="${acc.title}">${acc.title.length>12?acc.title.slice(0,12)+'…':acc.title}</span></td>
+      <td class="px-4 py-2 text-blue-600">¥${acc.sellPrice}</td>
+      <td class="px-4 py-2 text-orange-600">¥${acc.buybackPrice}</td>
+      <td class="px-4 py-2">${acc.status}</td>
+      <td class="px-4 py-2">${acc.createdAt?acc.createdAt.slice(0,16):''}</td>
+    </tr>
+    `;
+  });
+  if ((data.rows||[]).length==0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 py-8">暂无数据</td></tr>';
+  }
+}
+
+// 排序功能
+document.querySelectorAll('.sortable').forEach(th => {
+  th.onclick = function() {
+    const field = th.dataset.field;
+    if(sortField === field) {
+      sortOrder = (sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      sortField = field; sortOrder = 'asc';
+    }
+    loadAccounts();
+    document.querySelectorAll('.sortable i').forEach(i=>i.className='fa fa-sort');
+    th.querySelector('i').className = sortOrder==='asc' ? 'fa fa-sort-asc text-blue-600' : 'fa fa-sort-desc text-blue-600';
+  }
+});
+
+// 筛选和重置
+document.getElementById('filter-btn').onclick = loadAccounts;
+document.getElementById('reset-btn').onclick = function(){
+  document.getElementById('filter-game').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-title').value = '';
+  loadAccounts();
+};
+
+// 页面加载时自动显示账号列表
+loadAccounts();
+</script>
+</body>
+</html>
