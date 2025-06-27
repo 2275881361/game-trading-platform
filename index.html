@@ -390,7 +390,41 @@ document.addEventListener('DOMContentLoaded', function() {
         
         alert(`${action}账号 ${id} 的功能将在未来版本中实现`);
     });
-});<body class="font-inter bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 min-h-screen flex flex-col">
+});<!-- 添加账号弹窗 -->
+<div id="account-modal" style="display:none; position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:1000;">
+  <form id="account-form" style="background:#fff;padding:24px;border-radius:10px;min-width:260px;max-width:90vw;">
+    <h2 style="margin-bottom:16px;">添加账号</h2>
+    <div style="margin-bottom:8px;">
+      <label>游戏：</label><input id="form-game" required>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label>标题：</label><input id="form-title" required>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label>销售价格：</label><input id="form-sellPrice" type="number" required>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label>收购价格：</label><input id="form-buybackPrice" type="number" required>
+    </div>
+    <div style="margin-bottom:8px;">
+      <label>状态：</label>
+      <select id="form-status" required>
+        <option value="">请选择</option>
+        <option value="出售中">出售中</option>
+        <option value="审核中">审核中</option>
+        <option value="已售出">已售出</option>
+        <option value="已下架">已下架</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px;">
+      <label>描述：</label><textarea id="form-description"></textarea>
+    </div>
+    <button type="submit">提交</button>
+    <button type="button" id="account-cancel-btn">取消</button>
+  </form>
+</div>
+<!-- 添加账号按钮 -->
+<button id="show-add-account-btn" style="margin:16px 0;padding:8px 16px;background:#165DFF;color:#fff;border:none;border-radius:4px;cursor:pointer;">添加账号</button><body class="font-inter bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 min-h-screen flex flex-col">
     <!-- 导航栏 -->
     <header class="sticky top-0 z-40 bg-white dark:bg-neutral-800 transition-all duration-300">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
