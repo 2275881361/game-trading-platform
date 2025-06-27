@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏交易平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#FF7D00',
+                        success: '#00B42A',
+                        danger: '#F53F3F',
+                        warning: '#FF7D00',
+                        info: '#86909C',
+                        light: '#F2F3F5',
+                        dark: '#1D2129',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .sort-asc::after {
+                content: '↑';
+                margin-left: 4px;
+            }
+            .sort-desc::after {
+                content: '↓';
+                margin-left: 4px;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-neutral-50 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-100 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-40 bg-white dark:bg-neutral-800 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
+                    <i class="fa fa-gamepad text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold text-neutral-800 dark:text-white">游戏宝库</h1>
+            </div>
+            
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="#" class="text-primary font-medium">账号管理</a>
+                <a href="#" class="text-neutral-600 dark:text-neutral-300 hover:text-primary transition-colors">订单管理</a>
+                <a href="#" class="text-neutral-600 dark:text-neutral-300 hover:text-primary transition-colors">数据分析</a>
+            </nav>
+            
+            <div class="flex items-center space-x-4">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors">
+                    <i class="fa fa-moon-o"></i>
+                </button>
+                <button id="add-game-btn" class="hidden md:flex items-center px-4 py-2 bg-secondary hover:bg-secondary/90 text-white rounded-lg shadow transition-all duration-200">
+                    <i class="fa fa-plus mr-2"></i>
+                    <span>添加游戏</span>
+                </button>
+                <button id="add-account-btn" class="hidden md:flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg shadow transition-all duration-200">
+                    <i class="fa fa-plus mr-2"></i>
+                    <span>添加账号</span>
+                </button>
+                <button class="md:hidden p-2 rounded-full bg-primary text-white">
+                    <i class="fa fa-plus"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-6">
+        <!-- 页面标题 -->
+        <div class="mb-6">
+            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-neutral-800 dark:text-white">账号管理</h2>
+            <p class="text-neutral-500 dark:text-neutral-400">管理您的游戏账号，查看详细信息和交易状态</p>
+        </div>
+        
+        <!-- 游戏类目选择 -->
+        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 mb-6">
+            <div class="flex items-center justify-between">
+                <h3 class="font-semibold text-neutral-800 dark:text-white">游戏类目</h3>
+                <button id="add-game-mobile" class="md:hidden p-2 rounded-full bg-secondary text-white">
+                    <i class="fa fa-plus"></i>
+                </button>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-3" id="game-categories">
+                <button class="px-3 py-1.5 bg-primary text-white rounded-full text-sm flex items-center">
+                    全部
+                    <span class="ml-1.5 bg-white text-primary text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">4</span>
+                </button>
+                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="明日方舟">
+                    明日方舟
+                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
+                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                </button>
+                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="原神">
+                    原神
+                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
+                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                </button>
+                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="艾尔登法环">
+                    艾尔登法环
+                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
+                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                </button>
+                <button class="px-3 py-1.5 bg-neutral-100 dark:bg-neutral-700 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded-full text-sm transition-colors flex items-center" data-game="塞尔达传说">
+                    塞尔达传说
+                    <span class="ml-1.5 bg-neutral-300 dark:bg-neutral-500 text-neutral-700 dark:text-neutral-300 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">1</span>
+                    <button class="ml-1 text-neutral-400 hover:text-danger dark:hover:text-danger" title="编辑游戏">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 筛选栏 -->
+        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm p-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">游戏名称</label>
+                    <div class="relative">
+                        <select id="game-filter" class="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
+                            <option value="">全部游戏</option>
+                            <option value="明日方舟">明日方舟</option>
+                            <option value="原神">原神</option>
+                            <option value="艾尔登法环">艾尔登法环</option>
+                            <option value="塞尔达传说">塞尔达传说</option>
+                        </select>
+                        <i class="fa fa-gamepad absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">账号状态</label>
+                    <select class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
+                        <option value="">全部状态</option>
+                        <option value="审核中">审核中</option>
+                        <option value="出售中">出售中</option>
+                        <option value="已下架">已下架</option>
+                        <option value="已售出">已售出</option>
+                        <option value="已拒绝">已拒绝</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">价格范围</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400">¥</span>
+                            <input type="number" class="w-full pl-8 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" placeholder="最低">
+                        </div>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400">¥</span>
+                            <input type="number" class="w-full pl-8 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" placeholder="最高">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">创建时间</label>
+                    <input type="date" class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200">
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">标题搜索</label>
+                <div class="relative">
+                    <input type="text" id="title-search" class="w-full pl-9 pr-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200" placeholder="搜索标题内容...">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"></i>
+                </div>
+            </div>
+            <div class="flex justify-end mt-4 space-x-3">
+                <button class="px-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                    重置
+                </button>
+                <button id="search-btn" class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg shadow transition-all duration-200">
+                    搜索
+                </button>
+            </div>
+        </div>
+        
+        <!-- 账号列表 -->
+        <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm overflow-hidden">
+            <div class="flex justify-between items-center p-4 border-b border-neutral-200 dark:border-neutral-700">
+                <h3 class="font-semibold text-neutral-800 dark:text-white">账号列表</h3>
+                <button id="add-account-btn-table" class="flex items-center px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg shadow transition-all duration-200">
+                    <i class="fa fa-plus mr-2"></i>
+                    <span>添加账号</span>
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-200 dark:divide-neutral-700">
+                    <thead class="bg-neutral-50 dark:bg-neutral-700">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="id">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>ID</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="game">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>游戏</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="title">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>标题</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="server">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>服务器</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="level">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>等级</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="sellPrice">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>销售价格</span>
+                                    <i class="fa fa-sort-desc text-primary"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="buybackPrice">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>回收价格</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="status">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>状态</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="createdAt">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>创建时间</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider sortable" data-sort="soldAt">
+                                <div class="flex items-center space-x-1 cursor-pointer">
+                                    <span>出售时间</span>
+                                    <i class="fa fa-sort text-neutral-400"></i>
+                                </div>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                                操作
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-neutral-800 divide-y divide-neutral-200 dark:divide-neutral-700" id="accounts-table-body">
+                        <!-- 账号 1 -->
+                        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500">
+                                #GA-1001
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 rounded-md bg-blue-100 flex items-center justify-center mr-3">
+                                        <i class="fa fa-gamepad text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-neutral-900 dark:text-white">明日方舟</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 max-w-xs">
+                                <div class="text-sm font-medium text-neutral-900 dark:text-white truncate">全六星高练度账号</div>
+                                <div class="text-xs text-neutral-500 dark:text-neutral-400">包含所有限定干员，练度充足</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                安卓服
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                90
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary">
+                                ¥399.00
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-secondary">
+                                ¥259.00
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                    出售中
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                2025-06-15
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-500 dark:text-neutral-400">
+                                -
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex justify-end space-x-2">
+                                    <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-primary transition-colors" title="查看详情" data-id="GA-1001">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                    <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-primary transition-colors" title="编辑账号" data-id="GA-1001">
+                                        <i class="fa fa-pencil"></i>
+                                    </button>
+                                    <button class="p-1 text-neutral-500 dark:text-neutral-400 hover:text-danger transition-colors" title="下架账号" data-id="GA-1001">
+                                        <i class="fa fa-ban"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 分页 -->
+            <div class="px-4 py-3 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-700">
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-neutral-700 dark:text-neutral-300">
+                            显示第 <span class="font-medium">1</span> 到 <span class="font-medium">4</span> 条，共 <span class="font-medium">24</span> 条结果
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm font-medium text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600">
+                                <span class="sr-only">上一页</span>
+                                <i class="fa fa-chevron-left"></i>
+                            </a>
+                            <a href="#" aria-current="page" class="z-10 bg-primary text-white relative inline-flex items-center px-4 py-2 border border-primary text-sm font-medium">
+                                1
+                            </a>
+                            <a href="#" class="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                2
+                            </a>
+                            <a href="#" class="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                3
+                            </a>
+                            <span class="relative inline-flex items-center px-4 py-2 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                ...
+                            </span>
+                            <a href="#" class="bg-white dark:bg-neutral-700 border-neutral-300 dark:border-neutral-600 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-neutral-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                6
+                            </a>
+                            <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border
